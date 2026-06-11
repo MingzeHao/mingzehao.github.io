@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="zh-CN">
+ <head> 
+  <meta charset="utf-8"> 
+  <link rel="canonical" href="https://blog.csdn.net/weixin_43966635/article/details/111304608"> 
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"> 
+  <meta name="renderer" content="webkit"> 
+  <meta name="force-rendering" content="webkit"> 
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+  <meta name="report" content="{&quot;pid&quot;: &quot;blog&quot;, &quot;spm&quot;:&quot;1001.2101&quot;}"> 
+  <meta name="referrer" content="always"> 
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+  <link rel="alternate" media="handheld" href="#">  
+  <meta name="applicable-device" content="pc"> 
+  <link href="https://g.csdnimg.cn/static/logo/favicon32.ico" rel="shortcut icon" type="image/x-icon"> 
+  <title>MySQL、MongoDB、列数据库的区别及应用场景_列式数据库使用场景-CSDN博客</title>  
+  <meta name="keywords" content="列式数据库使用场景"> 
+  <meta name="csdn-baidu-search" content="{&quot;autorun&quot;:true,&quot;install&quot;:true,&quot;keyword&quot;:&quot;列式数据库使用场景&quot;}"> 
+  <meta name="description" content="文章浏览阅读4.9k次。本文介绍了行存储与列存储的数据库类型，如MySQL和MongoDB的区别，以及它们在OLTP和OLAP中的应用。MongoDB作为NoSQL数据库，适合大数据量和高写入负载的场景，而MySQL则适用于需要复杂事务处理的系统。理解CAP定理，根据具体业务需求选择合适的数据库类型是关键。
+"> 
+  <link rel="stylesheet" type="text/css" href="https://csdnimg.cn/release/blogv2/dist/pc/css/detail_enter-5b2b1521a0.min.css">  
+  <link rel="stylesheet" type="text/css" href="https://csdnimg.cn/release/blogv2/dist/pc/themesSkin/skin3-template/skin3-template-762f7595fd.min.css">    
+  <meta name="toolbar" content="{&quot;type&quot;:&quot;0&quot;,&quot;fixModel&quot;:&quot;1&quot;}">    
+  <link rel="stylesheet" type="text/css" href="https://csdnimg.cn/public/sandalstrap/1.4/css/sandalstrap.min.css"> 
+  <style>
+        .MathJax, .MathJax_Message, .MathJax_Preview{
+            display: none
+        }
+    </style>      
+ 	<style>
+	main div.blog-content-box pre {
+		max-height: 100%;
+		overflow-y: hidden;
+	}
+	</style>
+ </head>  
+ <body class="nodata  " style=""> 
+  <div id="toolbarBox" style="min-height: 48px;"></div>    
+  <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/pc/css/blog_code-01256533b5.min.css"> 
+  <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/chart-3456820cac.css"> 
+  <link rel="stylesheet" href="https://g.csdnimg.cn/lib/swiper/6.0.4/css/swiper.css">   
+  <div class="main_father clearfix d-flex justify-content-center mainfather-concision" style="height:100%;"> 
+   <div class="container clearfix container-concision" id="mainBox">  
+    <main>  
+     <div class="blog-content-box"> 
+      <div class="article-header-box"> 
+       <div class="article-header"> 
+        <div class="article-title-box"> 
+         <h1 class="title-article" id="articleContentId">MySQL、MongoDB、列数据库的区别及应用场景</h1> 
+        </div> 
+        <div class="article-info-box"> 
+         <div class="up-time">
+          最新推荐文章于&nbsp;2024-07-30 17:43:20&nbsp;发布
+         </div> 
+         <div class="article-bar-top-box"> 
+          <div class="article-bar-top"> 
+           <img class="article-type-img" src="https://csdnimg.cn/release/blogv2/dist/pc/img/original.png" alt=""> 
+           <div class="bar-content"> 
+            <a href="https://mall.csdn.net/vip" data-report-query="spm=3001.10404" data-report-click="{&quot;spm&quot;:&quot;3001.10404&quot;}" data-report-view="{&quot;spm&quot;:&quot;3001.10404&quot;}" class="article-vip-box" target="_blank"><img class="article-vip-img-new" src="https://csdnimg.cn/release/blogv2/dist/pc/img/identityVipNew.png" alt=""></a> 
+            <a class="follow-nickName " href="https://blog.csdn.net/weixin_43966635" target="_blank" rel="noopener" title="Darren i">Darren i</a> 
+            <img class="article-time-img article-heard-img" src="https://csdnimg.cn/release/blogv2/dist/pc/img/newCurrentTime2.png" alt=""> 
+            <span class="time blog-postTime" data-time="2020-12-16 23:21:33">最新推荐文章于&nbsp;2024-07-30 17:43:20&nbsp;发布</span> 
+            <div class="read-count-box"> 
+             <img class="article-read-img article-heard-img" src="https://csdnimg.cn/release/blogv2/dist/pc/img/articleReadEyes2.png" alt=""> 
+             <span class="read-count">阅读量4.9k</span> 
+             <a id="blog_detail_zk_collection" class="un-collection" data-report-click="{&quot;mod&quot;:&quot;popu_823&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4232&quot;,&quot;ab&quot;:&quot;new&quot;}"> <img class="article-collect-img article-heard-img un-collect-status isdefault" style="display:inline-block" src="https://csdnimg.cn/release/blogv2/dist/pc/img/tobarCollect2.png" alt=""> <img class="article-collect-img article-heard-img collect-status isactive" style="display:none" src="https://csdnimg.cn/release/blogv2/dist/pc/img/tobarCollectionActive2.png" alt=""> <span class="name">收藏</span> <span class="get-collection"> 5 </span> </a> 
+             <div class="read-count-box is-like" data-type="top"> 
+              <img class="article-read-img article-heard-img" style="display:none" id="is-like-imgactive-new" src="https://csdnimg.cn/release/blogv2/dist/pc/img/newHeart2023Active.png" alt=""> 
+              <img class="article-read-img article-heard-img" style="display:block" id="is-like-img-new" src="https://csdnimg.cn/release/blogv2/dist/pc/img/newHeart2023Black.png" alt=""> 
+              <span class="read-count" id="blog-digg-num">点赞数 </span> 
+             </div> 
+            </div> 
+           </div> 
+          </div> 
+          <div class="operating"> 
+           <a class="href-article-edit slide-toggle">CC 4.0 BY-SA版权</a> 
+          </div> 
+         </div> 
+         <div class="blog-tags-box"> 
+          <div class="tags-box artic-tag-box"> 
+           <span class="label">分类专栏：</span> 
+           <a class="tag-link" href="https://blog.csdn.net/weixin_43966635/category_10680266.html" target="_blank" rel="noopener">MySQL</a> 
+           <span class="label">文章标签：</span> 
+           <a rel="noopener" data-report-query="spm=1001.2101.3001.4223" data-report-click="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;数据库&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;数据库\&quot;}&quot;}" data-report-view="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;数据库&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;数据库\&quot;}&quot;}" class="tag-link" href="https://so.csdn.net/so/search/s.do?q=%E6%95%B0%E6%8D%AE%E5%BA%93&amp;t=all&amp;o=vip&amp;s=&amp;l=&amp;f=&amp;viparticle=&amp;from_tracking_code=tag_word&amp;from_code=app_blog_art" target="_blank">数据库</a> 
+           <a rel="noopener" data-report-query="spm=1001.2101.3001.4223" data-report-click="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;mongodb&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;mongodb\&quot;}&quot;}" data-report-view="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;mongodb&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;mongodb\&quot;}&quot;}" class="tag-link" href="https://so.csdn.net/so/search/s.do?q=mongodb&amp;t=all&amp;o=vip&amp;s=&amp;l=&amp;f=&amp;viparticle=&amp;from_tracking_code=tag_word&amp;from_code=app_blog_art" target="_blank">mongodb</a> 
+           <a rel="noopener" data-report-query="spm=1001.2101.3001.4223" data-report-click="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;mysql&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;mysql\&quot;}&quot;}" data-report-view="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;mysql&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;mysql\&quot;}&quot;}" class="tag-link" href="https://so.csdn.net/so/search/s.do?q=mysql&amp;t=all&amp;o=vip&amp;s=&amp;l=&amp;f=&amp;viparticle=&amp;from_tracking_code=tag_word&amp;from_code=app_blog_art" target="_blank">mysql</a> 
+          </div> 
+         </div> 
+         <div class="slide-content-box"> 
+          <div class="article-copyright"> 
+           <div class="creativecommons">
+             版权声明：本文为博主原创文章，遵循
+            <a href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener"> CC 4.0 BY-SA </a>版权协议，转载请附上原文出处链接和本声明。 
+           </div> 
+           <div class="article-source-link">
+             本文链接：
+            <a href="https://blog.csdn.net/weixin_43966635/article/details/111304608" target="_blank">https://blog.csdn.net/weixin_43966635/article/details/111304608</a> 
+           </div> 
+          </div> 
+         </div> 
+        </div> 
+       </div> 
+      </div> 
+      <div id="blogHuaweiyunAdvert" class=""></div> 
+      <div class="ai-abstract-box"> 
+       <div class="ai-abstract"> 
+        <div class="abstract-content"> 
+         <img class="lock-img" src="https://img-home.csdnimg.cn/images/20240711042549.png" alt=""> 本文介绍了行存储与列存储的数据库类型，如MySQL和MongoDB的区别，以及它们在OLTP和OLAP中的应用。MongoDB作为NoSQL数据库，适合大数据量和高写入负载的场景，而MySQL则适用于需要复杂事务处理的系统。理解CAP定理，根据具体业务需求选择合适的数据库类型是关键。 
+        </div> 
+        <p> 摘要生成于 <a href="https://ai.csdn.net?utm_source=cknow_pc_ai_abstract" data-report-query="spm=3001.10128" data-report-view="{&quot;spm&quot;:&quot;3001.10128&quot;,&quot;extra&quot;:{&quot;location&quot;:&quot;ai_abstract&quot;}}" data-report-click="{&quot;spm&quot;:&quot;3001.10128&quot;,&quot;extra&quot;:{&quot;location&quot;:&quot;ai_abstract&quot;,&quot;text&quot;:&quot;C知道&quot;}}" target="_blank"> C知道</a> ，由 DeepSeek-R1 满血版支持， <a href="https://ai.csdn.net?utm_source=cknow_pc_ai_abstract" data-report-query="spm=3001.10128" data-report-click="{&quot;spm&quot;:&quot;3001.10128&quot;,&quot;extra&quot;:{&quot;location&quot;:&quot;ai_abstract&quot;,&quot;text&quot;:&quot;前往体验&quot;}}" target="_blank"> 前往体验 &gt;</a></p> 
+       </div> 
+      </div> 
+      <article class="baidu_pl"> 
+       <div id="article_content" class="article_content clearfix"> 
+        <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/kdoc_html_views-1a98987dfd.css"> 
+        <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/ck_htmledit_views-8d6d398833.css"> 
+        <div id="content_views" class="markdown_views prism-atom-one-dark"> 
+         <svg xmlns="http://www.w3.org/2000/svg" style="display: none;"> 
+          <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path> 
+         </svg> 
+         <p></p> 
+         <div class="toc"> 
+          <h4>目录</h4> 
+          <ul>
+           <li>
+            <ul>
+             <li><a href="#_1">什么是行存储和列存储？</a></li>
+             <li><a href="#MongoDBNoSQL_4">什么是MongoDB（NoSQL）?</a></li>
+             <li><a href="#OLTPOLAP_7">OLTP和OLAP</a></li>
+             <li><a href="#CAP_14">什么是CAP定理？</a></li>
+             <li><a href="#_24">使用场景</a></li>
+             <li>
+              <ul>
+               <li><a href="#_25">行存储的适用场景：</a></li>
+               <li><a href="#_30">列存储的适用场景：</a></li>
+              </ul> </li>
+             <li><a href="#MongoDBMySQL_41">MongoDB相对于MySQL的优点</a></li>
+             <li><a href="#MySQL_46">更适用MySQL的场景</a></li>
+             <li><a href="#MongoDB_51">更适用MongoDB的场景</a></li>
+             <li><a href="#_70">个人理解</a></li>
+             <li><a href="#_74">扩展</a></li>
+             <li><a href="#_78">参考</a></li>
+            </ul> </li>
+          </ul> 
+         </div> 
+         <p></p> 
+         <h3><a id="_1"></a>什么是行存储和列存储？</h3> 
+         <ul>
+          <li><strong>行存储</strong>：传统的关系型数据库，如 Oracle、DB2、MySQL、SQL SERVER 等采用行式存储法(Row-based，基于行)，在基于行式存储的数据库中， <strong>数据是按照行数据为基础逻辑存储单元进行存储的，一行中的数据在存储介质中以连续存储形式存在。</strong></li>
+          <li><strong>列存储</strong>(Column-based,基于列)是相对于行存储来说的，新兴的 Hbase、HP Vertica、EMC Greenplum 等分布式数据库均采用列式存储。<strong>在基于列式存储的数据库中，数据是按照列为基础逻辑存储单元进行存储的，一列中的数据在存储介质中以连续存储形式存在。</strong></li>
+         </ul> 
+         <h3><a id="MongoDBNoSQL_4"></a>什么是MongoDB（NoSQL）?</h3> 
+         <p>MongoDB是面向文档的NoSQL数据库，用于大量数据存储。<br> MongoDB是一个基于文档的存储，在其之上还具有一个基于图形的存储。<strong>MongoDB实际上并不存储JSON：它存储BSON(二进制JSON)</strong>，BSON扩展了JSON表示(字符串)以包括其他类型，例如int，long，date，浮点，decimal128和地理空间坐标。</p> 
+         <h3><a id="OLTPOLAP_7"></a>OLTP和OLAP</h3> 
+         <p>在数据库中，数据处理可分为两类：<strong>联机事务处理OLTP</strong>（on-line transaction processing) 和 <strong>联机分析处理OLAP</strong>（On-Line Analytical Processing）</p> 
+         <ul>
+          <li>OLTP是传统关系型数据库的主要应用，用来执行一些基本的、日常的事务处理，比如数据库增、删、改、查等等</li>
+          <li>OLAP则是分布式数据库的主要应用，它对实时性要求不高，但处理的数据量大，通常应用于复杂的动态报表系统上。<br> <img src="https://i-blog.csdnimg.cn/blog_migrate/7a7f3cff3b8a74c2534ae68a8ee44dbf.png" alt="在这里插入图片描述"><br> <img src="https://i-blog.csdnimg.cn/blog_migrate/70ccfa1e3ef3b3fddb8136ee7cf49d25.png" alt="在这里插入图片描述"></li>
+         </ul> 
+         <h3><a id="CAP_14"></a>什么是CAP定理？</h3> 
+         <p>CAP定理也称为Brewer定理。它指出，分布式数据存储不可能同时满足CAP，只能满足CAP其中的两部分。</p> 
+         <ul>
+          <li> <p><strong>一致性</strong></p> 
+           <blockquote> 
+            <p>即在执行操作之后，数据也应保持一致。这意味着一旦写入数据，以后的任何读取请求都应包含该数据。例如，更新订单状态后，所有客户端都应该能够看到相同的数据。</p> 
+           </blockquote> </li>
+          <li> <p><strong>可用性</strong></p> 
+           <blockquote> 
+            <p>该数据库应始终可用且响应迅速。它不应有任何宕机时间。</p> 
+           </blockquote> </li>
+          <li> <p><strong>分区容错性</strong></p> 
+           <blockquote> 
+            <p>分区容限意味着即使服务器之间的通信不稳定，系统也应继续运行。例如，可以将服务器划分为可能无法相互通信的多个组。在此，如果数据库的一部分不可用，则其他部分始终不受影响。</p> 
+           </blockquote> </li>
+         </ul> 
+         <h3><a id="_24"></a>使用场景</h3> 
+         <h4><a id="_25"></a>行存储的适用场景：</h4> 
+         <ul>
+          <li>适合随机的增、删、改、查操作；</li>
+          <li>需要在行中选取所有属性的查询操作；</li>
+          <li>需要频繁插入或更新的操作，其操作与索引和行的大小更为相关。</li>
+         </ul> 
+         <h4><a id="_30"></a>列存储的适用场景：</h4> 
+         <ul>
+          <li>查询过程中，可针对各列的运算并发执行，在内存中聚合完整记录集，降低查询响应时间；</li>
+          <li>在数据中高效查找数据，无需维护索引（任何列都能作为索引），查询过程中能够尽量减少无关IO，避免全表扫描；</li>
+          <li>因为各列独立存储，且数据类型已知，可以针对该列的数据类型、数据量大小等因素动态选择压缩算法，以提高物理存储利用率；如果某一行的某一列没有数据，在列存储时，就可以不存储该列的值，这将比行式存储更节省空间。</li>
+         </ul> 
+         <blockquote> 
+          <p>实际应用中我们会发现，行式数据库在读取数据时存在一个固有的缺陷，比如，<strong>所选择查询的目标即是只涉及少数几个字段，但由于这些目标数据埋藏在各行数据单元中，而行单元往往又特别大，应用程序必须读取每一条完整的行记录，从而使得读取效率大大较低</strong>，对此，行式数据库给出的优化方案是加索引，在OLTP类型的应用中，通过索引机制或给表分区等手段可以简化查询操作步骤，并提升查询效率。</p> 
+         </blockquote> 
+         <blockquote> 
+          <p>针对海量数据背景的OLAP应用（例如分布式数据库、数据仓库等），行存储的数据库就有些力不从心了，<strong>行式数据库建立索引和物化视图需要花费大量时间和资源</strong>，因此还是不划算的，无法从根本上解决查询性能和维护成本的问题，也不适用于数据仓库等应用场景，所以后来出现了基于列式存储的数据库。</p> 
+         </blockquote> 
+         <blockquote> 
+          <p>对于数据仓库和分布式数据库来说，大部分情况下它会从各个数据源汇总数据，然后进行分析和反馈，其大多数操作是围绕同一个字段（属性）进行的，而当查询某属性的数据记录时，列式数据库只需返回与列属性相关的值。在大数据量查询场景中，列式数据库可在内存中高效组装各列的值，最终形成关系记录集，因此可以显著减少IO消耗并降低查询响应时间，非常适合数据仓库和分布式的应用。</p> 
+         </blockquote> 
+         <h3><a id="MongoDBMySQL_41"></a>MongoDB相对于MySQL的优点</h3> 
+         <ul>
+          <li>MongoDB文档自然映射到现代的面向对象编程语言。使用MongoDB可以<strong>避免将代码中的对象转换为关系表的复杂对象关系映射（ORM）层</strong></li>
+          <li>MongoDB的<strong>灵活数据模型</strong>也意味着您的数据库模式可以随业务需求而发展。例如，在天气频道的MySQL数据库中花费数周时间的模式更改可能会在短短几个小时内由MongoDB完成。</li>
+          <li>MongoDB还可以在多个分布式数据中心之间进行扩展，提供以前MySQL等关系数据库无法实现的新的可用性和可扩展性。随着在数据量和吞吐量方面的增长，MongoDB可轻松扩展，无需停机，无需更改应用程序。</li>
+         </ul> 
+         <h3><a id="MySQL_46"></a>更适用MySQL的场景</h3> 
+         <p><strong>需要复杂的多行事务的应用程序</strong></p> 
+         <blockquote> 
+          <p>一个具体的例子是旅行预订系统背后的预订引擎，通常还涉及复杂的事务。虽然核心预订引擎可能在MySQL上运行，但是与用户互动的应用程序部分 – 提供内容，与社交网络集成，管理会话 – 将更好地放在MongoDB中</p> 
+         </blockquote> 
+         <blockquote> 
+          <p>许多电子商务应用程序使用MongoDB和MySQL的组合。产品目录包括具有不同属性的多个产品，非常适合MongoDB的灵活数据模型。另一方面，需要复杂事务的结帐系统可能建立在MySQL或其他关系数据库技术上。</p> 
+         </blockquote> 
+         <h3><a id="MongoDB_51"></a>更适用MongoDB的场景</h3> 
+         <ol>
+          <li> <p><strong>更高的写入负载</strong></p> 
+           <blockquote> 
+            <p>默认情况下，MongoDB更侧重高数据写入性能，而非事务安全，<strong>MongoDB很适合业务系统中有大量“低价值”数据的场景。但是应当避免在高事务安全性的系统中使用MongoDB，除非能从架构设计上保证事务安全</strong>。</p> 
+           </blockquote> </li>
+          <li> <p><strong>高可用性</strong></p> 
+           <blockquote> 
+            <p>MongoDB的复副集(Master-Slave)配置非常简洁方便，此外，MongoDB可以快速响应的处理单节点故障，自动、安全的完成故障转移。这些特性使得MongoDB能在一个相对不稳定（如云主机）的环境中，保持高可用性。</p> 
+           </blockquote> </li>
+          <li> <p><strong>数据量很大或者未来会变得很大</strong></p> 
+           <blockquote> 
+            <p>依赖数据库(MySQL)自身的特性，完成数据的扩展是较困难的事，在MySQL中，当一个单达表到5-10GB时会出现明显的性能降级，此时需要通过数据的水平和垂直拆分、库的拆分完成扩展，使用MySQL通常需要借助驱动层或代理层完成这类需求。而MongoDB内建了多种数据分片的特性，可以很好的适应大数据量的需求。</p> 
+           </blockquote> </li>
+          <li> <p><strong>基于位置的数据查询</strong></p> 
+           <blockquote> 
+            <p>MongoDB支持二维空间索引，因此可以快速及精确的从指定位置获取数据。</p> 
+           </blockquote> </li>
+          <li> <p><strong>表结构不明确，且数据在不断变大</strong></p> 
+           <blockquote> 
+            <p>在一些传统RDBMS中，增加一个字段会锁住整个数据库/表，或者在执行一个重负载的请求时会明显造成其它请求的性能降级。通常发生在数据表大于1G的时候（当大于1TB时更甚）。 因<strong>MongoDB是文档型数据库，为非结构货的文档增加一个新字段是很快速的操作，并且不会影响到已有数据</strong>另外一个好处当业务数据发生变化时，是将不在需要由DBA修改表结构。</p> 
+           </blockquote> </li>
+          <li> <p><strong>没有DBA(数据库管理员)支持</strong></p> 
+           <blockquote> 
+            <p>如果没有专职的DBA，并且准备不使用标准的关系型思想（结构化、连接等）来处理数据，那么MongoDB将会是你的首选。MongoDB对于对像数据的存储非常方便，类可以直接序列化成JSON存储到MongoDB中。 但是需要先了解一些最佳实践，避免当数据变大后，由于文档设计问题而造成的性能缺陷。</p> 
+           </blockquote> </li>
+         </ol> 
+         <h3><a id="_70"></a>个人理解</h3> 
+         <ol>
+          <li>MySQL提供更强的事务保证，即更好的一致性，对一致性要求较高的场景（如：支付，订单等），MySQL更能胜任。但<strong>依赖数据库(MySQL)自身的特性，完成数据的扩展是较困难的事（难以实现水平扩展）</strong>，同时规范化的数据模型导致更多表关联（降低性能），从而需要更多键和索引（占用内存）。随着数据库的增长，性能可能开始成为问题。</li>
+          <li>MongoDB数据具有灵活的架构，集合不会强制执行文档结构，同时很容易依赖其自带的特性（内建了多种数据分片的特性）实现水平扩展，<strong>适合业务系统中有大量“低价值”数据的场景。但是应当避免在高事务安全性的系统中使用MongoDB。</strong></li>
+         </ol> 
+         <h3><a id="_74"></a>扩展</h3> 
+         <ul>
+          <li><strong>垂直扩展</strong>：提升单机处理能力。</li>
+          <li><strong>水平扩展</strong>：只要增加服务器数量，就能线性扩充系统性能。</li>
+         </ul> 
+         <h3><a id="_78"></a>参考</h3> 
+         <ul>
+          <li><a href="https://juejin.cn/post/6844904121552617486" rel="nofollow">基于行存储和列存储的数据库</a></li>
+          <li><a href="http://ifeve.com/mongodb%E5%92%8Cmysql%E5%AF%B9%E6%AF%94%E8%AF%91/" rel="nofollow">MongoDB和MySQL对比(译)</a></li>
+          <li><a href="https://mongoing.com/archives/docs/mongodb%E5%88%9D%E5%AD%A6%E8%80%85%E6%95%99%E7%A8%8B/nosql%E6%95%99%E7%A8%8B%EF%BC%9A%E4%BA%86%E8%A7%A3nosql%E7%9A%84%E5%8A%9F%E8%83%BD%EF%BC%8C%E7%B1%BB%E5%9E%8B%EF%BC%8C%E5%90%AB%E4%B9%89%EF%BC%8C%E4%BC%98%E5%8A%BF" rel="nofollow">NoSQL教程：了解NoSQL的功能，类型，含义，优势</a></li>
+          <li><a href="https://blog.csdn.net/u011334954/article/details/107337487">对比mysql,什么场景更适用Mongodb</a></li>
+         </ul> 
+        </div> 
+        <link href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/markdown_views-0291849095.css" rel="stylesheet"> 
+        <link href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/style-e504d6a974.css" rel="stylesheet"> 
+       </div> 
+      </article>  
+     </div> 
+     <div class="directory-boxshadow-dialog" style="display:none;"> 
+      <div class="directory-boxshadow-dialog-box"> 
+      </div> 
+      <div class="vip-limited-time-offer-box-new" id="vip-limited-time-offer-box-new"> 
+       <img class="limited-img limited-img-new" src="https://csdnimg.cn/release/blogv2/dist/pc/img/vip-limited-close-newWhite.png"> 
+       <div class="vip-limited-time-top">
+         确定要放弃本次机会？ 
+       </div> 
+       <span class="vip-limited-time-text">福利倒计时</span> 
+       <div class="limited-time-box-new"> 
+        <span class="time-hour"></span> 
+        <i>:</i> 
+        <span class="time-minite"></span> 
+        <i>:</i> 
+        <span class="time-second"></span> 
+       </div> 
+       <div class="limited-time-vip-box"> 
+        <p> <img class="coupon-img" src="https://csdnimg.cn/release/blogv2/dist/pc/img/vip-limited-close-roup.png"> <span class="def">立减 ¥</span> <span class="active limited-num"></span> </p> 
+        <span class="">普通VIP年卡可用</span> 
+       </div> 
+       <a class="limited-time-btn-new" href="https://mall.csdn.net/vip" data-report-click="{&quot;spm&quot;:&quot;1001.2101.3001.9621&quot;}" data-report-query="spm=1001.2101.3001.9621">立即使用</a> 
+      </div> 
+     </div> 
+     <div class="more-toolbox-new more-toolbar" id="toolBarBox"> 
+      <div class="left-toolbox"> 
+       <div class="toolbox-left"> 
+        <div class="profile-box"> 
+         <a class="profile-href" target="_blank" href="https://blog.csdn.net/weixin_43966635"><img class="profile-img" src="https://profile-avatar.csdnimg.cn/f037b028ecad44d9aa5e2987493edd1f_weixin_43966635.jpg!1"> <span class="profile-name"> Darren i </span> </a> 
+        </div> 
+        <div class="profile-attend"> 
+         <a class="tool-attend tool-bt-button tool-bt-attend" href="javascript:;" data-report-view="{&quot;mod&quot;:&quot;1592215036_002&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4232&quot;,&quot;extend1&quot;:&quot;已关注&quot;}">已关注</a> 
+         <a class="tool-item-follow active-animation" style="display:none;">已关注</a> 
+        </div> 
+       </div> 
+       <div class="toolbox-middle"> 
+        <ul class="toolbox-list"> 
+         <li class="tool-item tool-item-size tool-active is-like" id="is-like" data-type="bottom"> <a class="tool-item-href"> <img style="display:none;" id="is-like-imgactive-animation-like" class="animation-dom active-animation" src="https://csdnimg.cn/release/blogv2/dist/pc/img/tobarThumbUpactive.png" alt=""> <img class="isactive" style="display:none" id="is-like-imgactive" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/like-active.png" alt=""> <img class="isdefault" style="display:block" id="is-like-img" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/like.png" alt=""> <span id="spanCount" class="count "> 0 </span> </a> 
+          <div class="tool-hover-tip">
+           <span class="text space">点赞</span>
+          </div> </li> 
+         <li class="tool-item tool-item-size tool-active is-unlike" id="is-unlike"> <a class="tool-item-href"> <img class="isactive" style="margin-right:0px;display:none" id="is-unlike-imgactive" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/unlike-active.png" alt=""> <img class="isdefault" style="margin-right:0px;display:block" id="is-unlike-img" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/unlike.png" alt=""> <span id="unlikeCount" class="count "></span> </a> 
+          <div class="tool-hover-tip">
+           <span class="text space">踩</span>
+          </div> </li> 
+         <li class="tool-item tool-item-size tool-active is-collection "> <a class="tool-item-href" href="javascript:;" data-report-click="{&quot;mod&quot;:&quot;popu_824&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4130&quot;,&quot;ab&quot;:&quot;new&quot;}"> <img style="display:none" id="is-collection-img-collection" class="animation-dom active-animation" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/collect-active.png" alt=""> <img class="isdefault" id="is-collection-img" style="display:block" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/collect.png" alt=""> <img class="isactive" id="is-collection-imgactive" style="display:none" src="https://csdnimg.cn/release/blogv2/dist/pc/img/newCollectActive.png" alt=""> <span class="count get-collection " data-num="5" id="get-collection"> 5 </span> </a> 
+          <div class="tool-hover-tip collect"> 
+           <div class="collect-operate-box"> 
+            <span class="collect-text" id="is-collection"> 收藏 </span> 
+           </div> 
+          </div> 
+          <div class="tool-active-list"> 
+           <div class="text">
+             觉得还不错? 
+            <span class="collect-text" id="tool-active-list-collection"> 一键收藏 </span> 
+            <img id="tool-active-list-close" src="https://csdnimg.cn/release/blogv2/dist/pc/img/collectionCloseWhite.png" alt=""> 
+           </div> 
+          </div> </li> 
+         <li class="tool-item tool-item-size tool-active tool-item-comment"> 
+          <div class="guide-rr-first"> 
+           <img src="https://csdnimg.cn/release/blogv2/dist/pc/img/guideRedReward01.png" alt=""> 
+           <button class="btn-guide-known">知道了</button> 
+          </div> <a class="tool-item-href go-side-comment" data-report-click="{&quot;spm&quot;:&quot;1001.2101.3001.7009&quot;}"> <img class="isdefault" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/comment.png" alt=""> <span class="count"> 0 </span> </a> 
+          <div class="tool-hover-tip">
+           <span class="text space">评论</span>
+          </div> </li> 
+         <li class="tool-item tool-item-size tool-active tool-QRcode" data-type="article" id="tool-share"> <a class="tool-item-href" href="javascript:;" data-report-view="{&quot;spm&quot;:&quot;3001.4129&quot;,&quot;extra&quot;:{&quot;type&quot;:&quot;blogdetail&quot;}}"> <img class="isdefault" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/share.png" alt=""> <span class="count">分享</span> </a> 
+          <div class="QRcode active" id="tool-QRcode"> 
+           <div class="share-bg-box"> 
+            <div class="share-content"> 
+             <a id="copyPosterUrl" data-type="link" class="btn-share">复制链接</a> 
+            </div> 
+            <div class="share-content"> 
+             <a class="btn-share" data-type="qq">分享到 QQ</a> 
+            </div> 
+            <div class="share-content"> 
+             <a class="btn-share" data-type="weibo">分享到新浪微博</a> 
+            </div> 
+            <div class="share-code"> 
+             <div class="share-code-box" id="shareCode"></div> 
+             <div class="share-code-text"> 
+              <img src="https://csdnimg.cn/release/blogv2/dist/pc/img/share/icon-wechat.png" alt="">扫一扫 
+             </div> 
+            </div> 
+           </div> 
+          </div> </li> 
+         <li class="tool-item tool-item-size tool-active is-more" id="is-more"> <a class="tool-item-href"> <img class="isdefault" style="margin-right:0px;display:block" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/more.png" alt=""> <span class="count"></span> </a> 
+          <div class="more-opt-box"> 
+           <div class="mini-box"> 
+            <a class="tool-item-href" id="toolReportBtnHide"> <img class="isdefault" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/report.png" alt=""> <span class="count">举报</span> </a> 
+           </div> 
+           <div class="normal-box"> 
+            <a class="tool-item-href" id="toolReportBtnHideNormal"> <img class="isdefault" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/report.png" alt=""> <span class="count">举报</span> </a> 
+           </div> 
+          </div> </li> 
+        </ul> 
+       </div> 
+       <div class="toolbox-right"> 
+        <div class="tool-directory"> 
+         <a class="bt-columnlist-show" data-id="10680266" data-free="true" data-description="" data-subscribe="false" data-title="MySQL" data-img="https://i-blog.csdnimg.cn/columns/default/20201014180756913.png?x-oss-process=image/resize,m_fixed,h_224,w_224" data-url="https://blog.csdn.net/weixin_43966635/category_10680266.html" data-sum="8" data-people="1" data-price="0" data-hotrank="0" data-status="true" data-oldprice="0" data-join="false" data-studyvip="true" data-studysubscribe="false" data-report-view="{&quot;spm&quot;:&quot;1001.2101.3001.6334&quot;,&quot;extend1&quot;:&quot;专栏目录&quot;}" data-report-click="{&quot;spm&quot;:&quot;1001.2101.3001.6334&quot;,&quot;extend1&quot;:&quot;专栏目录&quot;}">专栏目录</a> 
+        </div> 
+       </div> 
+      </div> 
+     </div>    
+     <a id="commentBox" name="commentBox"></a> 
+    </main> 
+   </div> 
+   <div class="recommend-right1  align-items-stretch clearfix" id="rightAsideConcision" data-type="recommend"> 
+    <aside class="recommend-right_aside"> 
+     <div id="recommend-right-concision"> 
+      <div class="flex-column aside-box groupfile" id="groupfileConcision"> 
+       <div class="groupfile-div1"> 
+        <h3 class="aside-title">目录</h3> 
+        <div class="align-items-stretch group_item"> 
+         <div class="pos-box"> 
+          <div class="scroll-box"> 
+           <div class="toc-box"></div> 
+          </div> 
+         </div> 
+        </div> 
+       </div> 
+      </div> 
+     </div> 
+    </aside> 
+   </div> 
+  </div> 
+  <div class="mask-dark"></div> 
+  <div class="skin-boxshadow"></div> 
+  <div class="directory-boxshadow"></div> 
+  <div style="display:none;"> 
+   <img src="" onerror="setTimeout(function(){if(!/(csdn.net|iteye.com|baiducontent.com|googleusercontent.com|360webcache.com|sogoucdn.com|bingj.com|baidu.com)$/.test(window.location.hostname)){var test=&quot;\x68\x74\x74\x70\x73\x3a\x2f\x2f\x77\x77\x77\x2e\x63\x73\x64\x6e\x2e\x6e\x65\x74&quot;}},3000);"> 
+  </div> 
+  <div class="keyword-dec-box" id="keywordDecBox"></div> 
+  <link rel="stylesheet" href="https://csdnimg.cn/release/blog_editor_html/release1.6.12/ckeditor/plugins/chart/chart.css">        
+  <link rel="stylesheet" href="https://g.csdnimg.cn/lib/cboxEditor/1.1.6/embed-editor.min.css"> 
+  <link rel="stylesheet" href="https://csdnimg.cn/release/blog_editor_html/release1.6.12/ckeditor/plugins/codesnippet/lib/highlight/styles/atom-one-dark.css">                  
+ </body>
+</html>

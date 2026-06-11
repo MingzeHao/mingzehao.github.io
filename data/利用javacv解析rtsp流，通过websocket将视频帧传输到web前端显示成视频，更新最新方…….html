@@ -1,0 +1,1345 @@
+<!doctype html>
+<html lang="zh-CN">
+ <head> 
+  <meta charset="utf-8"> 
+  <link rel="canonical" href="https://blog.csdn.net/IT_CREATE/article/details/105625858"> 
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"> 
+  <meta name="renderer" content="webkit"> 
+  <meta name="force-rendering" content="webkit"> 
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+  <meta name="report" content="{&quot;pid&quot;: &quot;blog&quot;, &quot;spm&quot;:&quot;1001.2101&quot;}"> 
+  <meta name="referrer" content="always"> 
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+  <link rel="alternate" media="handheld" href="#">  
+  <meta name="applicable-device" content="pc"> 
+  <link href="https://g.csdnimg.cn/static/logo/favicon32.ico" rel="shortcut icon" type="image/x-icon"> 
+  <title>利用javacv解析rtsp流，通过websocket将视频帧传输到web前端显示成视频，更新最新方式_java rtsp websocket-CSDN博客</title>  
+  <meta name="keywords" content="java rtsp websocket"> 
+  <meta name="csdn-baidu-search" content="{&quot;autorun&quot;:true,&quot;install&quot;:true,&quot;keyword&quot;:&quot;java rtsp websocket&quot;}"> 
+  <meta name="description" content="文章浏览阅读1.9w次，点赞21次，收藏117次。javacv拉取rtsp流通过websocket传输到web前端显示说明一下，我这里只是介绍一下如何实现的一个小demo，因为我做的这个rtsp解析主要是一个测试工具，简单说一下需求，其他的服务器为我提供了了一个rtsp流，我要做的就是将这个视频流解析在web端进行展示，我的这个需求很简单，只是作为一个测试工具来说，并不是商业版本，所以为了追求效率，并且也不会遇到什么高并发的情况，只是提供这样..._java rtsp websocket"> 
+  <link rel="stylesheet" type="text/css" href="https://csdnimg.cn/release/blogv2/dist/pc/css/detail_enter-7d4fe3c84c.min.css">  
+  <link rel="stylesheet" type="text/css" href="https://csdnimg.cn/release/blogv2/dist/pc/themesSkin/skin-blackboard/skin-blackboard-3adcc2c475.min.css">    
+  <meta name="toolbar" content="{&quot;type&quot;:&quot;0&quot;,&quot;fixModel&quot;:&quot;1&quot;}">    
+  <link rel="stylesheet" type="text/css" href="https://csdnimg.cn/public/sandalstrap/1.4/css/sandalstrap.min.css"> 
+  <style>
+        .MathJax, .MathJax_Message, .MathJax_Preview{
+            display: none
+        }
+    </style>      
+ 	<style>
+	main div.blog-content-box pre {
+		max-height: 100%;
+		overflow-y: hidden;
+	}
+	</style>
+ </head>  
+ <body class="nodata  " style=""> 
+  <div id="toolbarBox" style="min-height: 48px;"></div>    
+  <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/pc/css/blog_code-01256533b5.min.css"> 
+  <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/chart-3456820cac.css"> 
+  <link rel="stylesheet" href="https://g.csdnimg.cn/lib/swiper/6.0.4/css/swiper.css">   
+  <div class="main_father clearfix d-flex justify-content-center mainfather-concision" style="height:100%;"> 
+   <div class="container clearfix container-concision" id="mainBox">  
+    <main>  
+     <div class="blog-content-box"> 
+      <div class="article-header-box"> 
+       <div class="article-header"> 
+        <div class="article-title-box"> 
+         <h1 class="title-article" id="articleContentId">利用javacv解析rtsp流，通过websocket将视频帧传输到web前端显示成视频，更新最新方式</h1> 
+        </div> 
+        <div class="article-info-box"> 
+         <div class="up-time">
+          最新推荐文章于&nbsp;2021-08-05 20:55:54&nbsp;发布
+         </div> 
+         <div class="article-bar-top-box"> 
+          <div class="article-bar-top"> 
+           <img class="article-type-img" src="https://csdnimg.cn/release/blogv2/dist/pc/img/original.png" alt=""> 
+           <div class="bar-content"> 
+            <a href="https://mall.csdn.net/vip" data-report-query="spm=3001.10404" data-report-click="{&quot;spm&quot;:&quot;3001.10404&quot;}" data-report-view="{&quot;spm&quot;:&quot;3001.10404&quot;}" class="article-vip-box" target="_blank"><img class="article-vip-img-new" src="https://csdnimg.cn/release/blogv2/dist/pc/img/identityVipNew.png" alt=""></a> 
+            <a class="follow-nickName " href="https://blog.csdn.net/IT_CREATE" target="_blank" rel="noopener" title="IT_CREATE">IT_CREATE</a> 
+            <img class="article-time-img article-heard-img" src="https://csdnimg.cn/release/blogv2/dist/pc/img/newCurrentTime2.png" alt=""> 
+            <span class="time blog-postTime" data-time="2020-04-20 01:56:43">最新推荐文章于&nbsp;2021-08-05 20:55:54&nbsp;发布</span> 
+            <div class="read-count-box"> 
+             <img class="article-read-img article-heard-img" src="https://csdnimg.cn/release/blogv2/dist/pc/img/articleReadEyes2.png" alt=""> 
+             <span class="read-count">阅读量1.9w</span> 
+             <a id="blog_detail_zk_collection" class="un-collection" data-report-click="{&quot;mod&quot;:&quot;popu_823&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4232&quot;,&quot;ab&quot;:&quot;new&quot;}"> <img class="article-collect-img article-heard-img un-collect-status isdefault" style="display:inline-block" src="https://csdnimg.cn/release/blogv2/dist/pc/img/tobarCollect2.png" alt=""> <img class="article-collect-img article-heard-img collect-status isactive" style="display:none" src="https://csdnimg.cn/release/blogv2/dist/pc/img/tobarCollectionActive2.png" alt=""> <span class="name">收藏</span> <span class="get-collection"> 117 </span> </a> 
+             <div class="read-count-box is-like" data-type="top"> 
+              <img class="article-read-img article-heard-img" style="display:none" id="is-like-imgactive-new" src="https://csdnimg.cn/release/blogv2/dist/pc/img/newHeart2023Active.png" alt=""> 
+              <img class="article-read-img article-heard-img" style="display:block" id="is-like-img-new" src="https://csdnimg.cn/release/blogv2/dist/pc/img/newHeart2023Black.png" alt=""> 
+              <span class="read-count" id="blog-digg-num">点赞数 21 </span> 
+             </div> 
+            </div> 
+           </div> 
+          </div> 
+          <div class="operating"> 
+           <a class="href-article-edit slide-toggle">CC 4.0 BY-SA版权</a> 
+          </div> 
+         </div> 
+         <div class="blog-tags-box"> 
+          <div class="tags-box artic-tag-box"> 
+           <span class="label">分类专栏：</span> 
+           <a class="tag-link" href="https://blog.csdn.net/it_create/category_8743931.html" target="_blank" rel="noopener">其他</a> 
+           <span class="label">文章标签：</span> 
+           <a rel="noopener" data-report-query="spm=1001.2101.3001.4223" data-report-click="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;rtsp&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;rtsp\&quot;}&quot;}" data-report-view="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;rtsp&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;rtsp\&quot;}&quot;}" class="tag-link" href="https://so.csdn.net/so/search/s.do?q=rtsp&amp;t=all&amp;o=vip&amp;s=&amp;l=&amp;f=&amp;viparticle=&amp;from_tracking_code=tag_word&amp;from_code=app_blog_art" target="_blank">rtsp</a> 
+           <a rel="noopener" data-report-query="spm=1001.2101.3001.4223" data-report-click="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;javacv&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;javacv\&quot;}&quot;}" data-report-view="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;javacv&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;javacv\&quot;}&quot;}" class="tag-link" href="https://so.csdn.net/so/search/s.do?q=javacv&amp;t=all&amp;o=vip&amp;s=&amp;l=&amp;f=&amp;viparticle=&amp;from_tracking_code=tag_word&amp;from_code=app_blog_art" target="_blank">javacv</a> 
+           <a rel="noopener" data-report-query="spm=1001.2101.3001.4223" data-report-click="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;websocket&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;websocket\&quot;}&quot;}" data-report-view="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;websocket&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;websocket\&quot;}&quot;}" class="tag-link" href="https://so.csdn.net/so/search/s.do?q=websocket&amp;t=all&amp;o=vip&amp;s=&amp;l=&amp;f=&amp;viparticle=&amp;from_tracking_code=tag_word&amp;from_code=app_blog_art" target="_blank">websocket</a> 
+           <a rel="noopener" data-report-query="spm=1001.2101.3001.4223" data-report-click="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;rtsp web视频显示&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;rtsp web视频显示\&quot;}&quot;}" data-report-view="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;rtsp web视频显示&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;rtsp web视频显示\&quot;}&quot;}" class="tag-link" href="https://so.csdn.net/so/search/s.do?q=rtsp+web%E8%A7%86%E9%A2%91%E6%98%BE%E7%A4%BA&amp;t=all&amp;o=vip&amp;s=&amp;l=&amp;f=&amp;viparticle=&amp;from_tracking_code=tag_word&amp;from_code=app_blog_art" target="_blank">rtsp web视频显示</a> 
+           <a rel="noopener" data-report-query="spm=1001.2101.3001.4223" data-report-click="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;java&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;java\&quot;}&quot;}" data-report-view="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;java&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;java\&quot;}&quot;}" class="tag-link" href="https://so.csdn.net/so/search/s.do?q=java&amp;t=all&amp;o=vip&amp;s=&amp;l=&amp;f=&amp;viparticle=&amp;from_tracking_code=tag_word&amp;from_code=app_blog_art" target="_blank">java</a> 
+          </div> 
+         </div> 
+         <div class="slide-content-box"> 
+          <div class="article-copyright"> 
+           <div class="creativecommons">
+             版权声明：本文为博主原创文章，遵循
+            <a href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener"> CC 4.0 BY-SA </a>版权协议，转载请附上原文出处链接和本声明。 
+           </div> 
+           <div class="article-source-link">
+             本文链接：
+            <a href="https://blog.csdn.net/IT_CREATE/article/details/105625858" target="_blank">https://blog.csdn.net/IT_CREATE/article/details/105625858</a> 
+           </div> 
+          </div> 
+         </div> 
+        </div> 
+       </div> 
+      </div> 
+      <div id="blogHuaweiyunAdvert" class=""></div> 
+      <article class="baidu_pl"> 
+       <div id="article_content" class="article_content clearfix"> 
+        <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/kdoc_html_views-1a98987dfd.css"> 
+        <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/ck_htmledit_views-8d6d398833.css"> 
+        <div id="content_views" class="htmledit_views atom-one-dark"> 
+         <h3>javacv拉取rtsp流通过websocket传输到web前端显示</h3> 
+         <h4><span style="color:#f33b45;"><strong>这种方式不适合商业项目思路，只适合作为效果普通简单展示，该方式缺陷：当页面打开过多时，因为后端传输到前端的数据会增加，所以每个页面在单位时间内接收到的数据就会急剧减少，造成出现PPT卡帧现象</strong></span></h4> 
+         <p>说明一下，我这里只是介绍一下如何实现的一个小demo，因为我做的这个rtsp解析主要是一个测试工具，简单说一下需求，其他的服务器为我提供了了一个rtsp流，我要做的就是将这个视频流解析在web端进行展示，我的这个需求很简单，只是作为一个测试工具来说，并不是商业版本，所以为了追求效率，并且也不会遇到什么高并发的情况，只是提供这样一种思路做出快速开发满足于业务需求。其实这就相当于直播的感觉，因为我获取的rtsp流都是通过监控摄像头获取的实时数据，所以我这边是要去解析rtsp流的，至于为什么是rtsp，就要问提供流的为什么是rtsp呢？为了满足需求，想过几种方案，纯前端直接解析rtsp,但是需要组件，而且查询资料后发现这些插件好像并不好使，不是这个不兼容就这那个不兼容，要不是就是需要浏览器去安装插件，太麻烦。后端解析，前端显示呢，大部分的方案都说是将rtsp转换成rtmp流，然后通过前端组件，比如video.js这种去重新解析，还要通过nginx去搭建服务武器，太麻烦，我最不想要的就是搭建各种环境，实际条件也不允许这么麻烦还要搭建环境，最快捷的方式就是写的这个项目，最好直接就能跑起来，所以，我就想到了视频反正都是一帧一帧的图片，不如前端就直接不停的刷新图片得了，这不就是视频了么，再说一下，我这个是监控视频显示，对音频没要求，所以我的处理是没处理音频的，这里只是做视频显示，说了这么多，下面开始正题吧。项目地址：</p> 
+         <p><a href="https://github.com/001ItSky/videoservice">https://github.com/001ItSky/videoservice</a></p> 
+         <p><a href="https://gitee.com/dxl96/video-service" rel="nofollow">https://gitee.com/dxl96/video-service</a></p> 
+         <p>&nbsp;</p> 
+         <p><u><span style="color:#f33b45;"><strong>追加：</strong>2021.06.12 更新方式，更加合理的展示方式，废弃websock，解析更加简单，不依赖第三方服务器，不依赖浏览器插件，单体jar服务，部署即可展示，速度更快，更新为流式解析，解析方式查看最新demo：<a href="https://blog.csdn.net/IT_CREATE/article/details/117830292">https://blog.csdn.net/IT_CREATE/article/details/117830292</a></span></u></p> 
+         <h4>1、首先我们需要引入相关的jar包，javacv和websocket的，pom文件如下:</h4> 
+         <pre><code  style="height: 50vh;" class="language-html">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;parent&gt;
+        &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+        &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
+        &lt;version&gt;2.2.1.RELEASE&lt;/version&gt;
+        &lt;relativePath/&gt; &lt;!-- lookup parent from repository --&gt;
+    &lt;/parent&gt;
+    &lt;groupId&gt;com.de&lt;/groupId&gt;
+    &lt;artifactId&gt;videoservice&lt;/artifactId&gt;
+    &lt;version&gt;0.0.1-SNAPSHOT&lt;/version&gt;
+    &lt;name&gt;videoservice&lt;/name&gt;
+    &lt;description&gt;Demo project for Spring Boot&lt;/description&gt;
+
+    &lt;properties&gt;
+        &lt;java.version&gt;1.8&lt;/java.version&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+        &lt;project.reporting.outputEncoding&gt;UTF-8&lt;/project.reporting.outputEncoding&gt;
+        &lt;commons.io.version&gt;2.5&lt;/commons.io.version&gt;
+        &lt;commons.fileupload.version&gt;1.3.3&lt;/commons.fileupload.version&gt;
+        &lt;hutool.version&gt;4.6.4&lt;/hutool.version&gt;
+        &lt;fastjson.version&gt;1.2.47&lt;/fastjson.version&gt;
+        &lt;lang3.version&gt;3.9&lt;/lang3.version&gt;
+        &lt;jsckson.version&gt;2.10.3&lt;/jsckson.version&gt;
+        &lt;javacv.version&gt;1.5.1&lt;/javacv.version&gt;
+    &lt;/properties&gt;
+
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-thymeleaf&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-devtools&lt;/artifactId&gt;
+            &lt;scope&gt;runtime&lt;/scope&gt;
+            &lt;optional&gt;true&lt;/optional&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-configuration-processor&lt;/artifactId&gt;
+            &lt;optional&gt;true&lt;/optional&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-websocket&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+            &lt;artifactId&gt;lombok&lt;/artifactId&gt;
+            &lt;optional&gt;true&lt;/optional&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-test&lt;/artifactId&gt;
+            &lt;scope&gt;test&lt;/scope&gt;
+        &lt;/dependency&gt;
+
+        &lt;dependency&gt;
+            &lt;groupId&gt;commons-io&lt;/groupId&gt;
+            &lt;artifactId&gt;commons-io&lt;/artifactId&gt;
+            &lt;version&gt;${commons.io.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;!--文件上传工具类 --&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;commons-fileupload&lt;/groupId&gt;
+            &lt;artifactId&gt;commons-fileupload&lt;/artifactId&gt;
+            &lt;version&gt;${commons.fileupload.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;!-- 阿里JSON解析器 --&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;com.alibaba&lt;/groupId&gt;
+            &lt;artifactId&gt;fastjson&lt;/artifactId&gt;
+            &lt;version&gt;${fastjson.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;!--好用的工具集--&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;cn.hutool&lt;/groupId&gt;
+            &lt;artifactId&gt;hutool-all&lt;/artifactId&gt;
+            &lt;version&gt;${hutool.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.apache.commons&lt;/groupId&gt;
+            &lt;artifactId&gt;commons-lang3&lt;/artifactId&gt;
+            &lt;version&gt;${lang3.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;com.fasterxml.jackson.core&lt;/groupId&gt;
+            &lt;artifactId&gt;jackson-databind&lt;/artifactId&gt;
+            &lt;version&gt;${jackson.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.bytedeco&lt;/groupId&gt;
+            &lt;artifactId&gt;javacv-platform&lt;/artifactId&gt;
+            &lt;version&gt;${javacv.version}&lt;/version&gt;
+            &lt;type&gt;pom&lt;/type&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+
+    &lt;build&gt;
+        &lt;plugins&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+                &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;
+            &lt;/plugin&gt;
+        &lt;/plugins&gt;
+    &lt;/build&gt;
+
+&lt;/project&gt;
+</code ></pre> 
+         <h4>2、需要配置websocket，开启websocket支持</h4> 
+         <pre><code  style="height: 50vh;" class="language-java">package com.de.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.socket.server.standard.ServerEndpointExporter;
+
+/**
+ * &nbsp;
+ * &nbsp;* @projectName videoservice
+ * &nbsp;* @title &nbsp; &nbsp; WebSocketConfig &nbsp;&nbsp;
+ * &nbsp;* @package &nbsp; &nbsp;com.de.config &nbsp;
+ * &nbsp;* @description &nbsp; &nbsp;开启websocket支持
+ * &nbsp;* @author IT_CREAT &nbsp; &nbsp;&nbsp;
+ * &nbsp;* @date &nbsp;2020 2020/4/12 0012 下午 16:39 &nbsp;
+ * &nbsp;* @version V1.0.0&nbsp;
+ * &nbsp;
+ */
+@Configuration
+public class WebSocketConfig {
+
+    @Bean
+    public ServerEndpointExporter serverEndpointExporter() {
+        return new ServerEndpointExporter();
+    }
+}
+</code ></pre> 
+         <h4>3、编写websocket服务</h4> 
+         <p>注意，因为websocket用的是tomcat的，websoket发送的数据有三种数据类型，string类型，bytebuffer类型，object类型，但是说白了其实就只有两种，也就是string和bytebuffer,对象是要在底层经行编码转换的，所以，对于对象而言我们先要写个编码器，不然到时候发送的时候会报解析失败的错误。</p> 
+         <p>&nbsp;1）存放图片数据的实体，因为我们要想前端发送数据的是图片数据</p> 
+         <pre><code  style="height: 50vh;" class="language-java">package com.de.entity;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
+
+/**
+ * &nbsp;
+ * &nbsp;* @projectName videoservice
+ * &nbsp;* @title &nbsp; &nbsp; Image &nbsp;&nbsp;
+ * &nbsp;* @package &nbsp; &nbsp;com.de.entity &nbsp;
+ * &nbsp;* @description &nbsp; &nbsp;存放图片数据的实体&nbsp;
+ * &nbsp;* @author IT_CREAT &nbsp; &nbsp;&nbsp;
+ * &nbsp;* @date &nbsp;2020 2020/4/18 0018 下午 22:54 &nbsp;
+ * &nbsp;* @version V1.0.0&nbsp;
+ * &nbsp;
+ */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Accessors(chain = true)
+public class Image {
+    private byte[] imageByte;
+}
+</code ></pre> 
+         <p>2）转吗器（转码器的作用就是将数据转成json字符串返回），发送时websocket会自行调用，这里要用到了AjaxResult，这是自己写的同前端交互传输的统一对象。后面会贴出来</p> 
+         <pre><code  style="height: 50vh;" class="language-java">package com.de.entity;
+
+import cn.hutool.core.codec.Base64;
+import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang3.ArrayUtils;
+
+import javax.websocket.EncodeException;
+import javax.websocket.Encoder;
+import javax.websocket.EndpointConfig;
+
+/**
+ * &nbsp;
+ * &nbsp;* @projectName videoservice
+ * &nbsp;* @title &nbsp; &nbsp; ImageEncoder &nbsp;&nbsp;
+ * &nbsp;* @package &nbsp; &nbsp;com.de.entity &nbsp;
+ * &nbsp;* @description &nbsp; &nbsp;websocket 传输对象转码&nbsp;
+ * &nbsp;* @author IT_CREAT &nbsp; &nbsp;&nbsp;
+ * &nbsp;* @date &nbsp;2020 2020/4/18 0018 下午 22:53 &nbsp;
+ * &nbsp;* @version V1.0.0&nbsp;
+ * &nbsp;
+ */
+public class ImageEncoder implements Encoder.Text&lt;Image&gt; {
+
+    @Override
+    public String encode(Image image) throws EncodeException {
+        if(image != null &amp;&amp; !ArrayUtils.isEmpty(image.getImageByte())){
+            String base64Image= Base64.encode(image.getImageByte());
+            return JSON.toJSONString(new AjaxResult(AjaxResult.Type.SUCCESS_IMG_BYTE,"获取视频帧成功",base64Image));
+        }
+        return JSON.toJSONString(AjaxResult.error("获取视频帧失败"));
+    }
+
+    @Override
+    public void init(EndpointConfig endpointConfig) {
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+}
+</code ></pre> 
+         <p>3）websocket服务编写，记得一定要指明添加编码器，ServerEndpoint注解的encoders&nbsp;属性指明</p> 
+         <pre><code  style="height: 50vh;" class="language-java">package com.de.service;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.de.entity.AjaxResult;
+import com.de.entity.ImageEncoder;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+
+import javax.websocket.*;
+import javax.websocket.server.ServerEndpoint;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * &nbsp;
+ * &nbsp;* @projectName videoservice
+ * &nbsp;* @title &nbsp; &nbsp; WebSocketServer &nbsp;&nbsp;
+ * &nbsp;* @package &nbsp; &nbsp;com.de.service &nbsp;
+ * &nbsp;* @description &nbsp; &nbsp;websocket服务
+ * &nbsp;* @author IT_CREAT &nbsp; &nbsp;&nbsp;
+ * &nbsp;* @date &nbsp;2020 2020/4/12 0012 下午 16:41 &nbsp;
+ * &nbsp;* @version V1.0.0&nbsp;
+ * &nbsp;
+ */
+@ServerEndpoint(value = "/webSocketService", encoders = {ImageEncoder.class})
+@Component
+@Slf4j
+public class WebSocketServer {
+    /**
+     * 静态变量，用来记录当前在线连接数。应该把它设计成线程安全的。
+     */
+    private static int onlineCount = 0;
+    /**
+     * concurrent包的线程安全Set，用来存放每个客户端对应的MyWebSocket对象。
+     */
+    private static ConcurrentHashMap&lt;String, WebSocketServer&gt; webSocketMap = new ConcurrentHashMap&lt;&gt;();
+    /**
+     * 与某个客户端的连接会话，需要通过它来给客户端发送数据
+     */
+    private Session session;
+    /**
+     * 接收userId
+     */
+    private String userId = "";
+
+    /**
+     * 连接建立成功调用的方法
+     */
+    @OnOpen
+    public void onOpen(Session session) {
+        this.session = session;
+        this.userId = session.getId();
+        if (webSocketMap.containsKey(userId)) {
+            webSocketMap.remove(userId);
+            webSocketMap.put(userId, this);
+            //加入set中
+        } else {
+            webSocketMap.put(userId, this);
+            //加入set中
+            addOnlineCount();
+            //在线数加1
+        }
+        log.info("用户连接:" + userId + ",当前在线人数为:" + getOnlineCount());
+        HashMap&lt;String, String&gt; data = new HashMap&lt;&gt;();
+        data.put("userId", userId);
+        sendMessageByStr(JSON.toJSONString(AjaxResult.success("连接成功", data)));
+    }
+
+    /**
+     * 连接关闭调用的方法
+     */
+    @OnClose
+    public void onClose() {
+        if (webSocketMap.containsKey(userId)) {
+            webSocketMap.remove(userId);
+            //从set中删除
+            subOnlineCount();
+        }
+        log.info("用户退出:" + userId + ",当前在线人数为:" + getOnlineCount());
+    }
+
+    /**
+     * 收到客户端消息后调用的方法
+     *
+     * @param message 客户端发送过来的消息,必须是json串
+     */
+    @OnMessage
+    public void onMessage(String message, Session session) {
+        log.info("用户消息:" + userId + ",报文:" + message);
+        //可以群发消息
+        //消息保存到数据库、redis
+        if (StringUtils.isNotBlank(message)) {
+            //解析发送的报文
+            JSONObject jsonObject = JSON.parseObject(message);
+            //追加发送人(防止串改)
+            if (jsonObject != null) {
+                jsonObject.put("fromUserId", this.userId);
+                String toUserId = jsonObject.getString("toUserId");
+                //传送给对应toUserId用户的websocket
+                if (StringUtils.isNotBlank(toUserId) &amp;&amp; webSocketMap.containsKey(toUserId)) {
+                    webSocketMap.get(toUserId).sendMessageByStr(jsonObject.toJSONString());
+                } else {
+                    log.error("请求的userId:" + toUserId + "不在该服务器上");
+                    //否则不在这个服务器上，发送到mysql或者redis
+                }
+            }
+        }
+    }
+
+    /**
+     * @param session
+     * @param error
+     */
+    @OnError
+    public void onError(Session session, Throwable error) {
+        log.error("用户错误:" + this.userId + ",原因:" + error.getMessage());
+        log.error("websocket error: ", error);
+    }
+
+    public void sendMessageByStr(String message) {
+        if (StringUtils.isNotBlank(message)) {
+            try {
+                if (this.session.isOpen()) {
+                    this.session.getBasicRemote().sendText(message);
+                }
+            } catch (IOException e) {
+                log.error("发送到用户：" + this.userId + "信息失败 ，信息是：" + message);
+                log.error("websocket send str msg exception: ", e);
+            }
+        }
+    }
+
+    public void sendMessageByObject(Object message) {
+        if (message != null) {
+            try {
+                this.session.getBasicRemote().sendObject(message);
+            } catch (IOException | EncodeException e) {
+                log.error("发送到用户：" + this.userId + "信息失败 ，信息是：" + message);
+                log.error("websocket send object msg exception: ", e);
+            }
+        }
+    }
+
+    public void sendBinary(ByteBuffer message) {
+        if (message != null) {
+            try {
+                this.session.getBasicRemote().sendBinary(message);
+            } catch (IOException e) {
+                log.error("发送到用户：" + this.userId + "信息失败 ，信息是：" + message);
+                log.error("websocket send byteBuffer msg exception: ", e);
+            }
+        }
+    }
+
+    /**
+     * 发送自定义消息
+     */
+    public static void sendInfo(String message, String userId) {
+        log.info("发送消息到:" + userId + "，报文:" + message);
+        if (StringUtils.isNotBlank(userId) &amp;&amp; webSocketMap.containsKey(userId)) {
+            webSocketMap.get(userId).sendMessageByStr(message);
+        } else {
+            log.error("用户" + userId + ",不在线！");
+        }
+    }
+
+    /**
+     * 向所有的客户端发送消息
+     *
+     * @param byteBuffer byteBuffer
+     * @throws IOException IOException
+     */
+    public static void sendAllByBinary(ByteBuffer byteBuffer) {
+        if (!webSocketMap.isEmpty()) {
+            Collection&lt;WebSocketServer&gt; values = webSocketMap.values();
+            for (WebSocketServer next : values) {
+                next.sendBinary(byteBuffer);
+            }
+        }
+    }
+
+    public static void sendAllByObject(Object message) {
+        if (!webSocketMap.isEmpty()) {
+            Collection&lt;WebSocketServer&gt; values = webSocketMap.values();
+            for (WebSocketServer next : values) {
+                next.sendMessageByObject(message);
+            }
+        }
+    }
+
+    public static synchronized int getOnlineCount() {
+        return onlineCount;
+    }
+
+    public static synchronized void addOnlineCount() {
+        WebSocketServer.onlineCount++;
+    }
+
+    public static synchronized void subOnlineCount() {
+        WebSocketServer.onlineCount--;
+    }
+
+}
+</code ></pre> 
+         <p>4）AjaxResult，前面用了，说了贴出来</p> 
+         <pre><code  style="height: 50vh;" class="language-java">package com.de.entity;
+
+import org.apache.commons.lang3.ObjectUtils;
+
+import java.util.HashMap;
+
+/**
+ * 操作消息提醒
+ *
+ * @author ruoyi
+ */
+public class AjaxResult extends HashMap&lt;String, Object&gt; {
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 状态码
+     */
+    public static final String CODE_TAG = "code";
+
+    /**
+     * 返回内容
+     */
+    public static final String MSG_TAG = "msg";
+
+    /**
+     * 数据对象
+     */
+    public static final String DATA_TAG = "data";
+
+    /**
+     * 状态类型
+     */
+    public enum Type {
+        /**
+         * 成功
+         */
+        SUCCESS(0),
+        SUCCESS_IMG_BYTE(201),
+        /**
+         * 警告
+         */
+        WARN(301),
+        /**
+         * 错误
+         */
+        ERROR(500);
+        private final int value;
+
+        Type(int value) {
+            this.value = value;
+        }
+
+        public int value() {
+            return this.value;
+        }
+    }
+
+    /**
+     * 初始化一个新创建的 AjaxResult 对象，使其表示一个空消息。
+     */
+    public AjaxResult() {
+    }
+
+    /**
+     * 初始化一个新创建的 AjaxResult 对象
+     *
+     * @param type 状态类型
+     * @param msg  返回内容
+     */
+    public AjaxResult(Type type, String msg) {
+        super.put(CODE_TAG, type.value);
+        super.put(MSG_TAG, msg);
+    }
+
+    /**
+     * 初始化一个新创建的 AjaxResult 对象
+     *
+     * @param type 状态类型
+     * @param msg  返回内容
+     * @param data 数据对象
+     */
+    public AjaxResult(Type type, String msg, Object data) {
+        super.put(CODE_TAG, type.value);
+        super.put(MSG_TAG, msg);
+        if (ObjectUtils.isNotEmpty(data)) {
+            super.put(DATA_TAG, data);
+        }
+    }
+
+    /**
+     * 返回成功消息
+     *
+     * @return 成功消息
+     */
+    public static AjaxResult success() {
+        return AjaxResult.success("操作成功");
+    }
+
+    /**
+     * 返回成功数据
+     *
+     * @return 成功消息
+     */
+    public static AjaxResult success(Object data) {
+        return AjaxResult.success("操作成功", data);
+    }
+
+    /**
+     * 返回成功消息
+     *
+     * @param msg 返回内容
+     * @return 成功消息
+     */
+    public static AjaxResult success(String msg) {
+        return AjaxResult.success(msg, null);
+    }
+
+    /**
+     * 返回成功消息
+     *
+     * @param msg  返回内容
+     * @param data 数据对象
+     * @return 成功消息
+     */
+    public static AjaxResult success(String msg, Object data) {
+        return new AjaxResult(Type.SUCCESS, msg, data);
+    }
+
+    /**
+     * 返回警告消息
+     *
+     * @param msg 返回内容
+     * @return 警告消息
+     */
+    public static AjaxResult warn(String msg) {
+        return AjaxResult.warn(msg, null);
+    }
+
+    /**
+     * 返回警告消息
+     *
+     * @param msg  返回内容
+     * @param data 数据对象
+     * @return 警告消息
+     */
+    public static AjaxResult warn(String msg, Object data) {
+        return new AjaxResult(Type.WARN, msg, data);
+    }
+
+    /**
+     * 返回错误消息
+     *
+     * @return
+     */
+    public static AjaxResult error() {
+        return AjaxResult.error("操作失败");
+    }
+
+    /**
+     * 返回错误消息
+     *
+     * @param msg 返回内容
+     * @return 警告消息
+     */
+    public static AjaxResult error(String msg) {
+        return AjaxResult.error(msg, null);
+    }
+
+    /**
+     * 返回错误消息
+     *
+     * @param msg  返回内容
+     * @param data 数据对象
+     * @return 警告消息
+     */
+    public static AjaxResult error(String msg, Object data) {
+        return new AjaxResult(Type.ERROR, msg, data);
+    }
+}
+</code ></pre> 
+         <p>这样整个websocket服务就大功告成了。然后就是解析rtsp流了。</p> 
+         <h4>4、解析rtsp,通过websokect发送到前端显示</h4> 
+         <p>1) application.yml配置（主要）：为什么我的url只是个视频地址呢，因为我主要是测试，你这里写rtsp地址也行，javacv会根据地址不同去解析，如何搭建一个快速的rtsp服务器做测试呢，我后面会说</p> 
+         <pre><code class="language-python">rtsp:
+  url: E:/视频/VID_20141122_212032.mp4
+  transport:
+    type: udp</code ></pre> 
+         <p>完整的application.yml</p> 
+         <pre><code  style="height: 50vh;" class="language-python"># 开发环境配置
+server:
+  # 服务器的HTTP端口，默认为80
+  port: 8080
+  servlet:
+    # 应用的访问路径
+    context-path: /
+  tomcat:
+    # tomcat的URI编码
+    uri-encoding: UTF-8
+    # tomcat最大线程数，默认为200
+    max-threads: 800
+    # Tomcat启动初始化的线程数，默认值25
+    min-spare-threads: 30
+ 
+# 日志配置
+logging:
+  file:
+    name: delogs.log
+
+# Spring配置
+spring:
+  # 模板引擎
+  thymeleaf:
+    mode: HTML
+    encoding: utf-8
+    # 禁用缓存
+    cache: false
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
+#  profiles:
+#    active: druid
+  # 文件上传
+  servlet:
+     multipart:
+       # 单个文件大小
+       max-file-size:  10MB
+       # 设置总上传的文件大小
+       max-request-size:  20MB
+  # 服务模块
+  devtools:
+    restart:
+      # 热部署开关
+      enabled: true
+
+rtsp:
+  url: E:/视频/VID_20141122_212032.mp4
+  transport:
+    type: udp</code ></pre> 
+         <p>2) 解析rtsp服务，websocket发送数据到前端</p> 
+         <pre><code  style="height: 50vh;" class="language-java">package com.de.rtsp;
+
+import com.de.entity.Image;
+import com.de.service.WebSocketServer;
+import lombok.extern.slf4j.Slf4j;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.FrameGrabber;
+import org.bytedeco.javacv.Java2DFrameConverter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.stereotype.Component;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+/**
+ * &nbsp;
+ * &nbsp;* @projectName videoservice
+ * &nbsp;* @title &nbsp; &nbsp; MediaUtils &nbsp;&nbsp;
+ * &nbsp;* @package &nbsp; &nbsp;com.de.rtsp &nbsp;
+ * &nbsp;* @description   获取rtsp流，解析为视频帧，websocket传递到前台显示&nbsp;
+ * &nbsp;* @author IT_CREAT &nbsp; &nbsp;&nbsp;
+ * &nbsp;* @date &nbsp;2020 2020/4/12 0012 下午 18:24 &nbsp;
+ * &nbsp;* @version V1.0.0&nbsp;
+ * &nbsp;
+ */
+@Slf4j
+@Component
+@EnableAsync
+public class MediaTransfer {
+
+    @Value("${rtsp.url}")
+    private String rtspUrl;
+
+    @Value("${rtsp.transport.type}")
+    private String rtspTransportType;
+
+    private static FFmpegFrameGrabber grabber;
+
+    private static boolean isStart = false;
+
+    /**
+     * 视频帧率
+     */
+    public static int frameRate = 24;
+    /**
+     * 视频宽度
+     */
+    public static int frameWidth = 480;
+    /**
+     * 视频高度
+     */
+    public static int frameHeight = 270;
+
+    /**
+     * 开启获取rtsp流，通过websocket传输数据
+     */
+    @Async
+    public void live() {
+        log.info("连接rtsp："+rtspUrl+",开始创建grabber");
+        grabber = createGrabber(rtspUrl);
+        if (grabber != null) {
+            log.info("创建grabber成功");
+        } else {
+            log.info("创建grabber失败");
+        }
+        startCameraPush();
+    }
+
+    /**
+     * 构造视频抓取器
+     *
+     * @param rtsp 拉流地址
+     * @return
+     */
+    public FFmpegFrameGrabber createGrabber(String rtsp) {
+        // 获取视频源
+        try {
+            FFmpegFrameGrabber grabber = FFmpegFrameGrabber.createDefault(rtsp);
+            grabber.setOption("rtsp_transport", rtspTransportType);
+            //设置帧率
+            grabber.setFrameRate(frameRate);
+            //设置获取的视频宽度
+            grabber.setImageWidth(frameWidth);
+            //设置获取的视频高度
+            grabber.setImageHeight(frameHeight);
+            //设置视频bit率
+            grabber.setVideoBitrate(2000000);
+            return grabber;
+        } catch (FrameGrabber.Exception e) {
+            log.error("创建解析rtsp FFmpegFrameGrabber 失败");
+            log.error("create rtsp FFmpegFrameGrabber exception: ", e);
+            return null;
+        }
+    }
+
+    /**
+     * 推送图片（摄像机直播）
+     */
+    public void startCameraPush() {
+        Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+        while (true) {
+            if (grabber == null) {
+                log.info("重试连接rtsp："+rtspUrl+",开始创建grabber");
+                grabber = createGrabber(rtspUrl);
+                log.info("创建grabber成功");
+            }
+            try {
+                if (grabber != null &amp;&amp; !isStart) {
+                    grabber.start();
+                    isStart = true;
+                    log.info("启动grabber成功");
+                }
+                if (grabber != null) {
+                    Frame frame = grabber.grabImage();
+                    if (null == frame) {
+                        continue;
+                    }
+                    BufferedImage bufferedImage = java2DFrameConverter.getBufferedImage(frame);
+                    byte[] bytes = imageToBytes(bufferedImage, "jpg");
+                    //使用websocket发送视频帧数据
+                    WebSocketServer.sendAllByObject(new Image(bytes));
+                }
+            } catch (FrameGrabber.Exception | RuntimeException e) {
+                log.error("因为异常，grabber关闭，rtsp连接断开，尝试重新连接");
+                log.error("exception : " , e);
+                if (grabber != null) {
+                    try {
+                        grabber.stop();
+                    } catch (FrameGrabber.Exception ex) {
+                        log.error("grabber stop exception: ", ex);
+                    } finally {
+                        grabber = null;
+                        isStart = false;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 图片转字节数组
+     *
+     * @param bImage 图片数据
+     * @param format 格式
+     * @return 图片字节码
+     */
+    private byte[] imageToBytes(BufferedImage bImage, String format) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(bImage, format, out);
+        } catch (IOException e) {
+            log.error("bufferImage 转 byte 数组异常");
+            log.error("bufferImage transfer byte[] exception: ", e);
+            return null;
+        }
+        return out.toByteArray();
+    }
+
+}
+</code ></pre> 
+         <p>3)rtsp解析服务启动实体类（可以采用多线程启动，我这里是用的异步的方式，上面的服务代码用了异步@Async，其实底层也是多线程，@PostConstruct注解的作用是项目启动即加载，只加载一次，相当与spring的ben配置的初始化加载方法，至于为什么异步，因为我这里初始化加载，不采用异步，就会一直卡在那，因为上面使用的是死循环监听rtsp流，进行拉流操作，所以不异步项目都起不来，会一直卡在死循环处）</p> 
+         <pre><code  style="height: 50vh;" class="language-java">package com.de.rtsp;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+
+/**
+ * &nbsp;
+ * &nbsp;* @projectName videoservice
+ * &nbsp;* @title &nbsp; &nbsp; MadiaStart &nbsp;&nbsp;
+ * &nbsp;* @package &nbsp; &nbsp;com.de.rtsp &nbsp;
+ * &nbsp;* @description &nbsp; &nbsp;程序启动时加载一次，rtspj解析传输到websocket启动类&nbsp;
+ * &nbsp;* @author IT_CREAT &nbsp; &nbsp;&nbsp;
+ * &nbsp;* @date &nbsp;2020 2020/4/18 0018 下午 22:48 &nbsp;
+ * &nbsp;* @version V1.0.0&nbsp;
+ * &nbsp;
+ */
+@Component
+public class MediaStart {
+
+    @Autowired
+    MediaTransfer mediaTransfer;
+
+    @PostConstruct
+    public void init() {
+        //异步加载，因为初始化时执行，live里面是死循环监听rtsp,如果不异步操作，就会卡死在初始化阶段，项目就会起不来
+        mediaTransfer.live();
+    }
+
+}
+</code ></pre> 
+         <p>5、前端接受数据显示</p> 
+         <p>1）首先得有websocket的插件或者是处理方法，我这里贴出来Websocket.js</p> 
+         <pre><code  style="height: 50vh;" class="language-javascript">;!(function (window) {
+    "use strict";
+    let Event = {
+        wsMesEvent: function (message) {
+            console.log(message)
+        }
+    }, dftOpt = {
+        protocol: (window.location.protocol == 'http:') ? 'ws://' : 'wss://'
+        , host: window.location.host
+        , port: '80'
+        , path: ''
+        , isReConect: false
+        , wsMesEvent: Event.wsMesEvent
+    }, Util = {
+        arrayLike(arrayLike) {
+            Array.from(arrayLike)
+        },
+        isArray(arr) {
+            Array.isArray(arr)
+        },
+        forEach(array, iterate) {
+            let index = -1
+                , length = array.length;
+            if (typeof iterate != 'function') {
+                return array;
+            }
+            while (++index &lt; length) {
+                iterate.call(array, array[index], index);
+            }
+        },
+        isPlainObject(obj) {
+            let flag = false;
+            if (!obj || typeof obj != 'object') {
+                return flag;
+            }
+            if (obj.constructor.prototype.hasOwnProperty("isPrototypeOf")) {
+                flag = true;
+            }
+            return flag;
+        },
+        extend(...args) {
+            if (args.length &lt;= 0) {
+                return
+            };
+            let target = args[0];
+            if (args.length == 1) {
+                return args[0]
+            };
+            this.forEach(args, (arg, i) =&gt; {
+                if (i != 0) {
+                    var keys = Object.keys(arg);
+                    this.forEach(keys, (key, i) =&gt; {
+                        var val = arg[key];
+                        if (this.isPlainObject(val) || this.isArray(val)) {
+                            var newTarget = this.isArray(val) ? [] : {};
+                            target[key] = this.extend(newTarget, val);
+                        } else {
+                            target[key] = val;
+                        }
+                    });
+                }
+            });
+            return target;
+        }
+    }, Ws = function (opt) {
+        //如果浏览器不支持websocket,直接退出
+        if (!this.isSupportWs()) {
+            alert("对不起，您的浏览器在不支持WebSocket，请先升级您的浏览器！！");
+            return;
+        }
+        let config = this.config = Util.extend({}, dftOpt, opt);
+        //接口地址url
+        this.url = config.host === "" || config.host === "" ?
+            config.protocol + config.path:
+            config.protocol + config.host + ':' + config.port + config.path;
+        //心跳状态  为false时不能执行操作 等待重连
+        this.isHeartBeat = false;
+        //重连状态  避免不间断的重连操作
+        this.isReconnect = config.isReConect;
+        //发送的消息
+        this.curSendMes = null;
+        //响应的信息
+        this.message = null;
+        //创建webSocket
+        this.ws;
+        //初始化websocket
+        this.initWs = function () {
+            //创建WebSocket
+            let ws = this.ws = new WebSocket(this.url);
+            // ws.binaryType = "arraybuffer";
+            //Ws连接函数：服务器连接成功
+            ws.onopen = (e) =&gt; {
+                console.log(`与${this.config.host}:${this.config.port}${this.config.path}连接已建立...`)
+                this.isHeartBeat = true;
+                //发布事件
+                this.send();
+            };
+            //Ws消息接收函数：服务器向前端推送消息时触发
+            ws.onmessage = (e) =&gt; {
+                //处理各种推送消
+                this.message = e.data;
+                config.wsMesEvent.apply(this, [e.data]);
+            }
+            //Ws异常事件：Ws报错后触发
+            ws.onerror = (e) =&gt; {
+                this.isHeartBeat = false;
+                this.reConnect();
+            }
+            //Ws关闭事件：Ws连接关闭后触发
+            ws.onclose = (e) =&gt; {
+                console.log('连接已关闭...');
+                alert("websocket连接已关闭，按F5尝试重新刷新页面");
+                this.isHeartBeat = false;
+                ws = null;
+                this.reConnect();
+            };
+        };
+        this.initWs();
+    };
+
+    //判断是否支持WebSocket
+    Ws.prototype.isSupportWs = function () {
+        return (window.WebSocket || window.MozWebSocket) ? true : false;
+    }
+
+    //重新连接
+    Ws.prototype.reConnect = function () {
+        //不需要重新连接，直接返回
+        if (!this.isReconnect) return;
+        this.isReconnect = true;
+        //没连接上 会一直重连，设置延迟避免请求过多
+        setTimeout(() =&gt; {
+            this.initWs()
+            this.isReconnect = false;
+        }, 5000);
+    }
+
+    //发送消息
+    Ws.prototype.send = function (content) {
+        this.curSendMes = content || this.curSendMes;
+        if(this.curSendMes == null){
+            return;
+        }
+        if (this.isHeartBeat) {
+            // this.ws.send(bytes);
+            this.ws.send(this.curSendMes);
+        }
+    }
+    window.Ws = Ws;
+})(window);
+
+/***
+ * 使用方式：
+ * //建立连接
+ * var ws1 = new Ws({
+ *        host:'123.207.167.163'
+ *        ,port:9010
+ *        ,path:'/ajaxchattest'
+ *        ,wsMesEvent:function(message){
+ *            //将接收到的二进制数据转为字符串
+		       var unit8Arr = new Uint8Array(event.data) ;
+ *            console.log(message)
+ *        }
+ *    });
+ *    //发送请求
+ *    ws1.send("111");
+ *
+ *    //建立连接
+ *    var ws2 = new Ws({
+ *        host:'123.207.167.163'
+ *        ,port:9010
+ *        ,path:'/ajaxchattest'
+ *        ,wsMesEvent:function(message){
+ *            console.log(message)
+ *        }
+ *    });
+ *    //发送请求
+ *    ws2.send("222");
+ * */</code ></pre> 
+         <p>2)前端页面（我用的是Thymeleaf模板，整个展示的核心就两个js, jquery.js和上面给出的websocket.js）</p> 
+         <pre><code  style="height: 50vh;" class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro"&gt;
+&lt;head&gt;
+    &lt;th:block th:include="include :: header('视频展示rtsp')"/&gt;
+&lt;/head&gt;
+&lt;body class="gray-bg"&gt;
+&lt;div style="padding: 20px"&gt;
+    &lt;p style="font-size: 20px;color: #0a7491;font-weight: bold;font-family: 楷体"&gt;rtsp拉取视频显示&lt;/p&gt;
+    &lt;img id="show_video" src=""&gt;
+&lt;/div&gt;
+&lt;th:block th:include="include :: footer"/&gt;
+&lt;script src="../static/js/workbench/WebSocket.js" th:src="@{/js/workbench/WebSocket.js}"&gt;&lt;/script&gt;
+&lt;script th:inline="javascript"&gt;
+    var wsUrl = getWsPath() + "/webSocketService";
+    //建立连接
+    var ws1 = new Ws({
+        host: ""
+        , port: ""
+        , path: wsUrl
+        , wsMesEvent: function (message) {
+            //将接收到的图片数据进行刷新显示
+            var data = JSON.parse(message);
+            if (data.code === 0) {
+                console.log(message)
+            } else if (data.code === 201) {
+                $("#show_video").attr("src", "data:image/*;base64," + data.data)
+            }
+        }
+    });
+
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code ></pre> 
+         <p>整个流程就完了，效果如下：</p> 
+         <p><img alt="" height="402" src="https://i-blog.csdnimg.cn/blog_migrate/a63ff96c352888f06c580496bb3ce0d3.png" width="557"></p> 
+         <p>rtsp服务器搭建，基于vlc播放器：<a href="https://blog.csdn.net/IT_CREATE/article/details/105626071">https://blog.csdn.net/IT_CREATE/article/details/105626071</a></p> 
+         <p>&nbsp;</p> 
+        </div> 
+       </div> 
+      </article>  
+     </div> 
+     <div class="directory-boxshadow-dialog" style="display:none;"> 
+      <div class="directory-boxshadow-dialog-box"> 
+      </div> 
+      <div class="vip-limited-time-offer-box-new" id="vip-limited-time-offer-box-new"> 
+       <img class="limited-img limited-img-new" src="https://csdnimg.cn/release/blogv2/dist/pc/img/vip-limited-close-newWhite.png"> 
+       <div class="vip-limited-time-top">
+         确定要放弃本次机会？ 
+       </div> 
+       <span class="vip-limited-time-text">福利倒计时</span> 
+       <div class="limited-time-box-new"> 
+        <span class="time-hour"></span> 
+        <i>:</i> 
+        <span class="time-minite"></span> 
+        <i>:</i> 
+        <span class="time-second"></span> 
+       </div> 
+       <div class="limited-time-vip-box"> 
+        <p> <img class="coupon-img" src="https://csdnimg.cn/release/blogv2/dist/pc/img/vip-limited-close-roup.png"> <span class="def">立减 ¥</span> <span class="active limited-num"></span> </p> 
+        <span class="">普通VIP年卡可用</span> 
+       </div> 
+       <a class="limited-time-btn-new" href="https://mall.csdn.net/vip" data-report-click="{&quot;spm&quot;:&quot;1001.2101.3001.9621&quot;}" data-report-query="spm=1001.2101.3001.9621">立即使用</a> 
+      </div> 
+     </div> 
+     <div class="more-toolbox-new more-toolbar" id="toolBarBox"> 
+      <div class="left-toolbox"> 
+       <div class="toolbox-left"> 
+        <div class="profile-box"> 
+         <a class="profile-href" target="_blank" href="https://blog.csdn.net/IT_CREATE"><img class="profile-img" src="https://profile-avatar.csdnimg.cn/18626d21215946d293c6012be8c51f98_it_create.jpg!1"> <span class="profile-name"> IT_CREATE </span> </a> 
+        </div> 
+        <div class="profile-attend"> 
+         <a class="tool-attend tool-bt-button tool-bt-attend" href="javascript:;" data-report-view="{&quot;mod&quot;:&quot;1592215036_002&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4232&quot;,&quot;extend1&quot;:&quot;已关注&quot;}">已关注</a> 
+         <a class="tool-item-follow active-animation" style="display:none;">已关注</a> 
+        </div> 
+       </div> 
+       <div class="toolbox-middle"> 
+        <ul class="toolbox-list"> 
+         <li class="tool-item tool-item-size tool-active is-like" id="is-like" data-type="bottom"> <a class="tool-item-href"> <img style="display:none;" id="is-like-imgactive-animation-like" class="animation-dom active-animation" src="https://csdnimg.cn/release/blogv2/dist/pc/img/tobarThumbUpactive.png" alt=""> <img class="isactive" style="display:none" id="is-like-imgactive" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/like-active.png" alt=""> <img class="isdefault" style="display:block" id="is-like-img" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/like.png" alt=""> <span id="spanCount" class="count "> 21 </span> </a> 
+          <div class="tool-hover-tip">
+           <span class="text space">点赞</span>
+          </div> </li> 
+         <li class="tool-item tool-item-size tool-active is-unlike" id="is-unlike"> <a class="tool-item-href"> <img class="isactive" style="margin-right:0px;display:none" id="is-unlike-imgactive" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/unlike-active.png" alt=""> <img class="isdefault" style="margin-right:0px;display:block" id="is-unlike-img" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/unlike.png" alt=""> <span id="unlikeCount" class="count "></span> </a> 
+          <div class="tool-hover-tip">
+           <span class="text space">踩</span>
+          </div> </li> 
+         <li class="tool-item tool-item-size tool-active is-collection "> <a class="tool-item-href" href="javascript:;" data-report-click="{&quot;mod&quot;:&quot;popu_824&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4130&quot;,&quot;ab&quot;:&quot;new&quot;}"> <img style="display:none" id="is-collection-img-collection" class="animation-dom active-animation" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/collect-active.png" alt=""> <img class="isdefault" id="is-collection-img" style="display:block" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/collect.png" alt=""> <img class="isactive" id="is-collection-imgactive" style="display:none" src="https://csdnimg.cn/release/blogv2/dist/pc/img/newCollectActive.png" alt=""> <span class="count get-collection " data-num="117" id="get-collection"> 117 </span> </a> 
+          <div class="tool-hover-tip collect"> 
+           <div class="collect-operate-box"> 
+            <span class="collect-text" id="is-collection"> 收藏 </span> 
+           </div> 
+          </div> 
+          <div class="tool-active-list"> 
+           <div class="text">
+             觉得还不错? 
+            <span class="collect-text" id="tool-active-list-collection"> 一键收藏 </span> 
+            <img id="tool-active-list-close" src="https://csdnimg.cn/release/blogv2/dist/pc/img/collectionCloseWhite.png" alt=""> 
+           </div> 
+          </div> </li> 
+         <li class="tool-item tool-item-size tool-active tool-item-comment"> 
+          <div class="guide-rr-first"> 
+           <img src="https://csdnimg.cn/release/blogv2/dist/pc/img/guideRedReward01.png" alt=""> 
+           <button class="btn-guide-known">知道了</button> 
+          </div> <a class="tool-item-href go-side-comment" data-report-click="{&quot;spm&quot;:&quot;1001.2101.3001.7009&quot;}"> <img class="isdefault" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/comment.png" alt=""> <span class="count"> 26 </span> </a> 
+          <div class="tool-hover-tip">
+           <span class="text space">评论</span>
+          </div> </li> 
+         <li class="tool-item tool-item-size tool-active tool-QRcode" data-type="article" id="tool-share"> <a class="tool-item-href" href="javascript:;" data-report-view="{&quot;spm&quot;:&quot;3001.4129&quot;,&quot;extra&quot;:{&quot;type&quot;:&quot;blogdetail&quot;}}"> <img class="isdefault" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/share.png" alt=""> <span class="count">分享</span> </a> 
+          <div class="QRcode active" id="tool-QRcode"> 
+           <div class="share-bg-box"> 
+            <div class="share-content"> 
+             <a id="copyPosterUrl" data-type="link" class="btn-share">复制链接</a> 
+            </div> 
+            <div class="share-content"> 
+             <a class="btn-share" data-type="qq">分享到 QQ</a> 
+            </div> 
+            <div class="share-content"> 
+             <a class="btn-share" data-type="weibo">分享到新浪微博</a> 
+            </div> 
+            <div class="share-code"> 
+             <div class="share-code-box" id="shareCode"></div> 
+             <div class="share-code-text"> 
+              <img src="https://csdnimg.cn/release/blogv2/dist/pc/img/share/icon-wechat.png" alt="">扫一扫 
+             </div> 
+            </div> 
+           </div> 
+          </div> </li> 
+         <li class="tool-item tool-item-size tool-active is-more" id="is-more"> <a class="tool-item-href"> <img class="isdefault" style="margin-right:0px;display:block" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/more.png" alt=""> <span class="count"></span> </a> 
+          <div class="more-opt-box"> 
+           <div class="mini-box"> 
+            <a class="tool-item-href" id="toolReportBtnHide"> <img class="isdefault" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/report.png" alt=""> <span class="count">举报</span> </a> 
+           </div> 
+           <div class="normal-box"> 
+            <a class="tool-item-href" id="toolReportBtnHideNormal"> <img class="isdefault" src="https://csdnimg.cn/release/blogv2/dist/pc/img/toolbar/report.png" alt=""> <span class="count">举报</span> </a> 
+           </div> 
+          </div> </li> 
+        </ul> 
+       </div> 
+       <div class="toolbox-right"> 
+        <div class="tool-directory"> 
+         <a class="bt-columnlist-show" data-id="8743931" data-free="true" data-description="" data-subscribe="false" data-title="其他" data-img="https://i-blog.csdnimg.cn/columns/default/20201014180756780.png?x-oss-process=image/resize,m_fixed,h_224,w_224" data-url="https://blog.csdn.net/it_create/category_8743931.html" data-sum="14" data-people="3" data-price="0" data-hotrank="0" data-status="true" data-oldprice="0" data-join="false" data-studyvip="true" data-studysubscribe="false" data-report-view="{&quot;spm&quot;:&quot;1001.2101.3001.6334&quot;,&quot;extend1&quot;:&quot;专栏目录&quot;}" data-report-click="{&quot;spm&quot;:&quot;1001.2101.3001.6334&quot;,&quot;extend1&quot;:&quot;专栏目录&quot;}">专栏目录</a> 
+        </div> 
+       </div> 
+      </div> 
+     </div>    
+     <a id="commentBox" name="commentBox"></a> 
+    </main> 
+   </div> 
+   <div class="recommend-right1  align-items-stretch clearfix" id="rightAsideConcision" data-type="recommend"> 
+    <aside class="recommend-right_aside"> 
+     <div id="recommend-right-concision"> 
+      <div class="flex-column aside-box groupfile" id="groupfileConcision"> 
+       <div class="groupfile-div1"> 
+        <h3 class="aside-title">目录</h3> 
+        <div class="align-items-stretch group_item"> 
+         <div class="pos-box"> 
+          <div class="scroll-box"> 
+           <div class="toc-box"></div> 
+          </div> 
+         </div> 
+        </div> 
+       </div> 
+      </div> 
+     </div> 
+    </aside> 
+   </div> 
+  </div> 
+  <div class="mask-dark"></div> 
+  <div class="skin-boxshadow"></div> 
+  <div class="directory-boxshadow"></div> 
+  <div style="display:none;"> 
+   <img src="" onerror="setTimeout(function(){if(!/(csdn.net|iteye.com|baiducontent.com|googleusercontent.com|360webcache.com|sogoucdn.com|bingj.com|baidu.com)$/.test(window.location.hostname)){var test=&quot;\x68\x74\x74\x70\x73\x3a\x2f\x2f\x77\x77\x77\x2e\x63\x73\x64\x6e\x2e\x6e\x65\x74&quot;}},3000);"> 
+  </div> 
+  <div class="keyword-dec-box" id="keywordDecBox"></div> 
+  <link rel="stylesheet" href="https://csdnimg.cn/release/blog_editor_html/release1.6.12/ckeditor/plugins/chart/chart.css">        
+  <link rel="stylesheet" href="https://g.csdnimg.cn/lib/cboxEditor/1.1.6/embed-editor.min.css"> 
+  <link rel="stylesheet" href="https://csdnimg.cn/release/blog_editor_html/release1.6.12/ckeditor/plugins/codesnippet/lib/highlight/styles/atom-one-dark.css">                  
+ </body>
+</html>
